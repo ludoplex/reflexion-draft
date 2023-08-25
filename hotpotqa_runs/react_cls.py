@@ -50,19 +50,19 @@ class ReactAgent:
     def step(self) -> None:
         # Think
         self.scratchpad += f'\nThought {self.step_n}:'
-        self.scratchpad += ' ' + self.prompt_agent()
+        self.scratchpad += f' {self.prompt_agent()}'
         #print(self.scratchpad.split('\n')[-1])
 
         # Act
         self.scratchpad += f'\nAction {self.step_n}:'
         action = self.prompt_agent()
-        self.scratchpad += ' ' + action
+        self.scratchpad += f' {action}'
         action_type, argument = parse_action(action)
         #print(self.scratchpad.split('\n')[-1])
 
         # Observe
         self.scratchpad += f'\nObservation {self.step_n}: '
-        
+
         if action_type == 'Finish':
             self.answer = argument
             if self.is_correct():
@@ -78,13 +78,13 @@ class ReactAgent:
                 self.scratchpad += format_step(self.docstore.search(argument))
             except Exception as e:
                 print(e)
-                self.scratchpad += f'Could not find that page, please try again.'
-            
+                self.scratchpad += 'Could not find that page, please try again.'
+
         elif action_type == 'Lookup':
             try:
                 self.scratchpad += format_step(self.docstore.lookup(argument))
             except ValueError:
-                self.scratchpad += f'The last page Searched was not found, so you cannot Lookup a keyword in it. Please try one of the similar pages given.'
+                self.scratchpad += 'The last page Searched was not found, so you cannot Lookup a keyword in it. Please try one of the similar pages given.'
 
         else:
             self.scratchpad += 'Invalid Action. Valid Actions are Lookup[<topic>] Search[<topic>] and Finish[<answer>].'
@@ -184,25 +184,16 @@ class ReactReflectAgent(ReactAgent):
 
 def parse_action(string):
     pattern = r'^(\w+)\[(.+)\]$'
-    match = re.match(pattern, string)
-    
-    if match:
-        action_type = match.group(1)
-        argument = match.group(2)
-        return action_type, argument
-    
-    else:
-        return None
+    return (match[1], match[2]) if (match := re.match(pattern, string)) else None
 
 def format_step(step: str) -> str:
     return step.strip('\n').strip().replace('\n', '')
 
 def format_reflections(reflections: List[str]) -> str:
-    if reflections == []:
+    if not reflections:
         return ''
-    else:
-        header = REFLECTION_HEADER
-        return header + 'Reflections:\n- ' + '\n- '.join([r.strip() for r in reflections])
+    header = REFLECTION_HEADER
+    return header + 'Reflections:\n- ' + '\n- '.join([r.strip() for r in reflections])
 
 def normalize_answer(s):
   def remove_articles(text):

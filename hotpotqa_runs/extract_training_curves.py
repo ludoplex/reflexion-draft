@@ -7,8 +7,7 @@ LOG_FILE = sys.argv[1]
 def extract_digits(input_str):
     digit_regex = r'\d+'
     digit_strings = re.findall(digit_regex, input_str)
-    digit_floats = [float(digit_str) for digit_str in digit_strings]
-    return digit_floats
+    return [float(digit_str) for digit_str in digit_strings]
 
 def main():
     with open(LOG_FILE, 'r') as f:
